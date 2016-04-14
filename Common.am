@@ -1,0 +1,41 @@
+
+
+
+MDSPLUS_LIBS = -lMdsObjectsCppShr -lMdsShr -lTreeShr -lTdiShr -lMdsIpShr \
+               -lstdc++ -lpthread -lm
+
+RPMDS_INCLUDES = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src
+
+AM_CFLAGS   =  $(OPT) $(MDS_CPPFLAGS) $(RPMDS_INCLUDES)
+AM_CXXFLAGS =  $(OPT) $(MDS_CPPFLAGS) $(RPMDS_INCLUDES)
+AM_LDFLAGS  =  $(OPT_LD) $(MDS_LDFLAGS)
+AM_LIBS     =  $(MDSPLUS_LIBS)
+
+
+AM_DEFAULT_SOURCE_EXT = .cpp
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# ///  DOCKER   ////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+@DK_DOCKER_TARGETS@
+
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# ///  RECONFIGURE   ///////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+.PHONY: reconfigure
+reconfigure:
+	@ \
+	echo " -- Reconfiguring build with following parameters: -----------"; \
+	echo $(shell $(abs_top_builddir)/config.status --config);              \
+	echo " -------------------------------------------------------------"; \
+	echo ; \
+	cd '$(top_builddir)' && \
+	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
+
+
+
