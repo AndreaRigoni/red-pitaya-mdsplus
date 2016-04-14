@@ -1,0 +1,3 @@
+[submodule "mdsplus"]
+	path = mdsplus
+	url = https://github.com/mdsplus/mdsplus.git
