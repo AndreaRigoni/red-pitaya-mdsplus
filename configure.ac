@@ -204,6 +204,9 @@ AH_BOTTOM()
 
 AC_CONFIG_FILES([
         Makefile
+        src/Makefile
+        fpga/Makefile
+        OS/buildroot/Makefile
 	])
 AC_OUTPUT
 

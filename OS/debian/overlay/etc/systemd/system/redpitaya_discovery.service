@@ -1,0 +1,9 @@
+[Unit]
+Description=Registering Red Pitaya board MAC address and IP address to a server
+After=ifplugd.service
+
+[Service]
+ExecStart=/opt/redpitaya/sbin/discovery.sh
+
+[Install]
+WantedBy=multi-user.target
