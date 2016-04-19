@@ -29,10 +29,10 @@ create_project -part $part -force redpitaya ./project
 ################################################################################
 
 # create PS BD
-source                            $srcdir/$path_ip/design_1.tcl
+source                            $srcdir/$path_ip/system.tcl
 
 # generate SDK files
-generate_target all [get_files    design_1.bd]
+generate_target all [get_files    system.bd]
 
 ################################################################################
 # read files:
@@ -41,7 +41,7 @@ generate_target all [get_files    design_1.bd]
 # 3. constraints
 ################################################################################
 
-read_verilog                      ./project/redpitaya.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
+read_verilog                      ./project/redpitaya.srcs/sources_1/bd/system/hdl/system_wrapper.v
 
 add_files -fileset constrs_1      $srcdir/$path_sdc/red_pitaya.xdc
 

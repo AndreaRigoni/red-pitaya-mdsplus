@@ -5,6 +5,8 @@
 # hsi -mode tcl -source red_pitaya_hsi_fsbl.tcl
 ################################################################################
 
+global env
+set srcdir   $env(srcdir)
 set path_sdk sdk
 
 open_hw_design $path_sdk/red_pitaya.sysdef

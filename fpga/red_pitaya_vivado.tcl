@@ -10,8 +10,8 @@
 ################################################################################
 
 global env
-
 set srcdir   $env(srcdir)
+
 set path_rtl rtl
 set path_ip  ip
 set path_sdc sdc
@@ -43,11 +43,11 @@ create_project -in_memory -part $part
 
 # file was created from GUI using "write_bd_tcl -force ip/system_bd.tcl"
 # create PS BD
-source                            $srcdir/$path_ip/design_1.tcl
+source                            $srcdir/$path_ip/system.tcl
 
 # generate SDK files
-generate_target all [get_files    design_1.bd]
-write_hwdef              -file    $path_sdk/red_pitaya.hwdef
+generate_target all [get_files    system.bd]
+write_hwdef        -force         $path_sdk/red_pitaya.hwdef
 
 ################################################################################
 # read files:
@@ -60,10 +60,10 @@ write_hwdef              -file    $path_sdk/red_pitaya.hwdef
 #read_verilog                      $path_rtl/...
 
 # sources
-read_verilog                      .srcs/sources_1/bd/system/hdl/design_1_wrapper.v
+read_verilog                      .srcs/sources_1/bd/system/hdl/system_wrapper.v
 
 # constraints
-read_xdc                          $srcdir/$path_sdc/red_pitaya.xdc
+# read_xdc                          $srcdir/$path_sdc/red_pitaya.xdc
 
 ################################################################################
 # run synthesis
@@ -72,7 +72,7 @@ read_xdc                          $srcdir/$path_sdc/red_pitaya.xdc
 ################################################################################
 
 #synth_design -top red_pitaya_top
-synth_design -top red_pitaya_top -flatten_hierarchy none -bufg 16 -keep_equivalent_registers
+synth_design -top system_wrapper -flatten_hierarchy none -bufg 16 -keep_equivalent_registers
 
 write_checkpoint         -force   $path_out/post_synth
 report_timing_summary    -file    $path_out/post_synth_timing_summary.rpt

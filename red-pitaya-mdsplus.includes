@@ -2,3 +2,4 @@
 OS/buildroot
 fpga
 patches
+fpga/sdc

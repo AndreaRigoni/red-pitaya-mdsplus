@@ -3429,7 +3429,6 @@ Makefile.originalrp
 README.md
 settings.sh
 fpga/Makefile.am
-fpga/red_pitaya_hsi_dram_test.tcl
 fpga/red_pitaya_hsi_dts.tcl
 fpga/red_pitaya_hsi_fsbl.tcl
 fpga/red_pitaya_vivado_project.tcl
@@ -3440,3 +3439,4 @@ OS/buildroot/config.armel
 OS/buildroot/config_2014.02.armhf
 OS/buildroot/busybox.config
 OS/buildroot/config_2016.02.armhf
+fpga/sdc/red_pitaya.xdc

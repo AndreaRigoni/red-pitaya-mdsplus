@@ -5,6 +5,8 @@
 # hsi -mode tcl -source red_pitaya_hsi_dts.tcl
 ################################################################################
 
+global env
+set srcdir   $env(srcdir)
 set path_sdk sdk
 
 #set boot_args {console=ttyPS0,115200n8 root=/dev/ram rw initrd=0x00800000,16M earlyprintk mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs)}
