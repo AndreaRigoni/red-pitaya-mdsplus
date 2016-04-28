@@ -10,8 +10,9 @@
 ################################################################################
 
 global env
-
 set srcdir   $env(srcdir)
+set_param general.maxThreads $env(maxThreads)
+
 set path_rtl rtl
 set path_ip  ip
 set path_sdc sdc

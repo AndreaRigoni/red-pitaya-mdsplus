@@ -207,6 +207,7 @@ AC_CONFIG_FILES([
         src/Makefile
         fpga/Makefile
         OS/buildroot/Makefile
+        OS/debian/Makefile
 	])
 AC_OUTPUT
 

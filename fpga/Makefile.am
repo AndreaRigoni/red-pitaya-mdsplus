@@ -10,12 +10,16 @@
 #   2. Memtest (stand alone memory test) ELF binary.
 #   4. Linux device tree source (dts).
 
+
+include $(top_srcdir)/Common.am
+
 # build artefacts
 FPGA_BIT=out/red_pitaya.bit
 FSBL_ELF=sdk/fsbl/executable.elf
 DEVICE_TREE=sdk/dts/system.dts
 
 export srcdir
+export maxThreads=$(MAKE_PROCESS)
 
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration

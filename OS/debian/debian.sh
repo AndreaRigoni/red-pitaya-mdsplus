@@ -1,3 +1,4 @@
+#!/bin/bash 
 ################################################################################
 # Authors:
 # - Pavel Demin <pavel.demin@uclouvain.be>
@@ -6,15 +7,130 @@
 # https://raw.githubusercontent.com/RedPitaya/RedPitaya/master/COPYING
 ################################################################################
 
-# Install Debian base system to the root file system
-#MIRROR=http://ftp.arnes.si/pub/packages/debian
-MIRROR=http://ftp.debian.org/debian
-DISTRO=jessie
-debootstrap --foreign --arch $ARCH $DISTRO $ROOT_DIR $MIRROR
+# //////////////////////////////////////////////////////////////////////////// #
+# // ARGS PARSE ////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-# enable chroot access with native execution
-cp /etc/resolv.conf         $ROOT_DIR/etc/
-cp /usr/bin/qemu-arm-static $ROOT_DIR/usr/bin/
+SCRIPTNAME=$(basename "$0")
+SCRIPT_DIR=$(dirname "$0")
+
+MIRROR=${MIRROR:=http://ftp.debian.org/debian}
+DISTRO=${DISTRO:=jessie}
+OVERLAY=${OVERLAY:=overlay}
+ROOT_DIR=${ROOT_DIR:=root}
+ARCH=${ARCH:=armhf}
+
+# Makefile dependency
+srcdir=${srcdir:?}
+top_srcdir=${top_srcdir:?}
+
+
+print_help() {
+cat << EOF
+
+Installs debian redpitaya into a specified root directory
+Usage: $SCRIPTNAME [options]
+
+       options
+       -------
+       -h|--help          get this help      
+       -c|--config        set distribution config file
+       -v|--verbose       show script source script
+       -m|--mirror        debian mirror ( $MIRROR )
+       -d|--distro        debian distro name ( $DISTRO )
+       -o|--overlay       system overlay to be applied
+       -r|--root          root directory to install to
+       -a|--arch          architecture ( $ARCH )
+       
+EOF
+}
+
+## parse cmd parameters:
+while [[ "$1" == -* ]] ; do
+	case "$1" in
+		-h|--help)
+			print_help
+			exit
+			;;
+		-c|--config)
+		        CONFIG_FILE=$2
+			shift 2
+			;;
+			
+		-s|--size)
+		        SIZE=$2
+			shift 2
+			;;
+
+		-m|--mirror)
+		        MIRROR=$2
+			shift 2
+			;;
+
+		-d|--distro)
+		        DISTRO=$2
+			shift 2
+			;;
+			
+		-o|--overlay)
+		        OVERLAY=$2
+			shift 2
+			;;
+			
+		-r|--root)
+		        ROOT_DIR=$2
+			shift 2
+			;;
+
+		-a|--arch)
+		        ARCH=$2
+			shift 2
+			;;
+
+	        -v|--verbose)
+		        set -o verbose
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+		*)
+		        break
+			;;
+	esac
+done
+
+
+# evaluate config file if any
+if [ ${CONFIG_FILE} -a -f ${CONFIG_FILE} ]; then 
+ source ${CONFIG_FILE}
+fi
+
+
+# setup arm chroot
+mkdir -p $ROOT_DIR/etc
+mkdir -p $ROOT_DIR/usr/bin
+[ -f $ROOT_DIR/etc/resolv.conf ]          || cp /etc/resolv.conf         $ROOT_DIR/etc/
+[ -f $ROOT_DIR//usr/bin/qemu-arm-static ] || cp /usr/bin/qemu-arm-static $ROOT_DIR/usr/bin/
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# // FUNCTIONS  ////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+
+check_command() {  
+  hash $1 2>/dev/null
+}
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# // INSTALL DEBIAN  ///////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+check_command debootstrap
+debootstrap --foreign --arch $ARCH $DISTRO $ROOT_DIR $MIRROR
 
 chroot $ROOT_DIR <<- EOF_CHROOT
 export LANG=C
@@ -22,8 +138,7 @@ export LANG=C
 EOF_CHROOT
 
 # copy U-Boot environment tools
-install -v -m 664 -o root -D patches/fw_env.config                      $ROOT_DIR/etc/fw_env.config
-
+install -v -m 664 -o root -D ${top_srcdir}/patches/fw_env.config        $ROOT_DIR/etc/fw_env.config
 install -v -m 664 -o root -D $OVERLAY/etc/apt/apt.conf.d/99norecommends $ROOT_DIR/etc/apt/apt.conf.d/99norecommends
 install -v -m 664 -o root -D $OVERLAY/etc/apt/sources.list              $ROOT_DIR/etc/apt/sources.list
 install -v -m 664 -o root -D $OVERLAY/etc/fstab                         $ROOT_DIR/etc/fstab
@@ -31,11 +146,11 @@ install -v -m 664 -o root -D $OVERLAY/etc/hostname                      $ROOT_DI
 install -v -m 664 -o root -D $OVERLAY/etc/timezone                      $ROOT_DIR/etc/timezone
 install -v -m 664 -o root -D $OVERLAY/etc/securetty                     $ROOT_DIR/etc/securetty
 
-# setup locale and timezune, install packages
+# setup locale and timezone, install packages
 chroot $ROOT_DIR <<- EOF_CHROOT
 # TODO seems sytemd is not running without /proc/cmdline or something
 #hostnamectl set-hostname redpitaya
-#timedatectl set-timezone Europe/Ljubljana
+#timedatectl set-timezone Europe/Rome
 #localectl   set-locale   LANG="en_US.UTF-8"
 
 apt-get update
@@ -83,6 +198,3 @@ service ntp stop
 history -c
 EOF_CHROOT
 
-# disable chroot access with native execution
-rm $ROOT_DIR/etc/resolv.conf
-rm $ROOT_DIR/usr/bin/qemu-arm-static

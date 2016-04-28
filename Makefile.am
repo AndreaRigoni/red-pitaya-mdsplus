@@ -29,47 +29,10 @@ endif
 # ///  OLD MAKEFILE FROM REDPITAYA  ////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-TMP = tmp
-DL  = dl
-
-UBOOT_TAG     = xilinx-v2015.4
-LINUX_TAG     = xilinx-v2015.4.01
-DTREE_TAG     = xilinx-v2015.4
-#BUILDROOT_TAG = 2015.5
-
-UBOOT_DIR     = $(TMP)/u-boot-xlnx-$(UBOOT_TAG)
-LINUX_DIR     = $(TMP)/linux-xlnx-$(LINUX_TAG)
-DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
-BUILDROOT_DIR = $(TMP)/buildroot-$(BUILDROOT_TAG)
-
-UBOOT_TAR     = $(DL)/u-boot-xlnx-$(UBOOT_TAG).tar.gz
-LINUX_TAR     = $(DL)/linux-xlnx-$(LINUX_TAG).tar.gz
-DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
-BUILDROOT_TAR = $(DL)/buildroot-$(BUILDROOT_TAG).tar.gz
-
-# it is possible to use an alternative download location (local) by setting environment variables
-UBOOT_URL     ?= https://github.com/Xilinx/u-boot-xlnx/archive/$(UBOOT_TAG).tar.gz
-LINUX_URL     ?= https://github.com/Xilinx/linux-xlnx/archive/$(LINUX_TAG).tar.gz
-DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
-BUILDROOT_URL ?= http://buildroot.uclibc.org/downloads/buildroot-$(BUILDROOT_TAG).tar.gz
-
-UBOOT_GIT     ?= https://github.com/Xilinx/u-boot-xlnx.git
-LINUX_GIT     ?= https://github.com/Xilinx/linux-xlnx.git
-DTREE_GIT     ?= https://github.com/Xilinx/device-tree-xlnx.git
-BUILDROOT_GIT ?= http://git.buildroot.net/git/buildroot.git
-
-SYSROOT=$(PWD)/OS/buildroot/buildroot-2014.02/output/host/usr/arm-buildroot-linux-gnueabihf/sysroot
-LINUX_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-UBOOT_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-
-################################################################################
-#
-################################################################################
 
 INSTALL_DIR=build
 TARGET=target
-NAME=ecosystem
-MAKE_PROCESS=$(shell grep -c ^processor /proc/cpuinfo)
+
 
 # directories
 FPGA_DIR        = fpga
@@ -86,12 +49,27 @@ LINUX           = $(TMP)/uImage
 BOOT_UBOOT      = $(TMP)/boot.bin
 
 
+TOOLCHAIN_DIR   = /opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
+CROSS_COMPILE   = arm-linux-gnueabihf-
 
 ################################################################################
 # tarball
 ################################################################################
 
-all: zip sdk apps-free
+
+define GREET_MSG
+##############################################################################
+# Red Pitaya GNU/Linux Ecosystem for RFX transient recorder
+# Version: $(VER)
+# Branch: $(GIT_BRANCH_LOCAL)
+# Build: $(BUILD_NUMBER)
+# Commit: $(GIT_COMMIT)
+##############################################################################
+endef
+export GREET_MSG
+
+
+all: setup zip
 
 $(DL):
 	mkdir -p $@
@@ -99,25 +77,24 @@ $(DL):
 $(TMP):
 	mkdir -p $@
 
-$(TARGET): $(BOOT_UBOOT) u-boot $(DEVICETREE) $(LINUX) buildroot $(IDGEN) $(NGINX) examples $(DISCOVERY) $(HEARTBEAT) ecosystem scpi api apps_pro rp_communication
+$(TARGET): $(BOOT_UBOOT) u-boot $(DEVICETREE) $(LINUX) buildroot
 	mkdir -p               $(TARGET)
 	cp $(BOOT_UBOOT)       $(TARGET)/boot.bin
 	cp $(DEVICETREE)       $(TARGET)
 	cp $(LINUX)            $(TARGET)
 	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-	     modules_install INSTALL_MOD_PATH=${TARGET}	
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   modules_install INSTALL_MOD_PATH=${TARGET}	
 	mkdir -p               $(TARGET)/fpga
 	cp $(FPGA)             $(TARGET)/fpga/fpga.bit
-	cp fpga/archive/*.xz   $(TARGET)/fpga
-	cd $(TARGET)/fpga; xz -df *.xz
 	cp -r $(INSTALL_DIR)/* $(TARGET)
-	cp -r OS/filesystem/*  $(TARGET)
+	cp -r $(srcdir)/OS/filesystem/*  $(TARGET)
 	@echo "$$GREET_MSG" >  $(TARGET)/version.txt
-	cp OS/debian/overlay/etc/hostapd/hostapd.conf $(TARGET)/hostapd.conf
-	cp /opt/linaro/sysroot-linaro-eglibc-gcc4.9-2014.11-arm-linux-gnueabihf/usr/lib/libstdc++.so.6 $(TARGET)/lib
+	cp $(srcdir)/OS/debian/overlay/etc/hostapd/hostapd.conf $(TARGET)/hostapd.conf
+#	cp /opt/linaro/sysroot-linaro-eglibc-gcc4.9-2014.11-arm-linux-gnueabihf/usr/lib/libstdc++.so.6 $(TARGET)/lib
 
 zip: $(TARGET)
-	cd $(TARGET); zip -r ../$(NAME)-$(VERSION).zip *
+	cd $(TARGET); zip -r ../$(ECOSYSEM_ZIP) *
 
 
 
@@ -129,7 +106,7 @@ zip: $(TARGET)
 
 .PHONY: fpga
 
-fpga: $(DTREE_DIR)
+fpga: setup $(DTREE_DIR)
 	make -C $(FPGA_DIR)
 
 ################################################################################
@@ -138,8 +115,8 @@ fpga: $(DTREE_DIR)
 
 ENVTOOLS_CFG    = $(INSTALL_DIR)/etc/fw_env.config
 
-UBOOT_SCRIPT_BUILDROOT = patches/u-boot.script.buildroot
-UBOOT_SCRIPT_DEBIAN    = patches/u-boot.script.debian
+UBOOT_SCRIPT_BUILDROOT = $(srcdir)/patches/u-boot.script.buildroot
+UBOOT_SCRIPT_DEBIAN    = $(srcdir)/patches/u-boot.script.debian
 UBOOT_SCRIPT           = $(INSTALL_DIR)/u-boot.scr
 
 .PHONY: u-boot
@@ -152,12 +129,12 @@ $(UBOOT_TAR): | $(DL)
 $(UBOOT_DIR): $(UBOOT_TAR)
 	mkdir -p $@
 	tar -zxf $< --strip-components=1 --directory=$@
-	patch -d $@ -p 1 < patches/u-boot-xlnx-$(UBOOT_TAG).patch
+	patch -d $@ -p 1 < $(top_srcdir)/patches/u-boot-xlnx-$(UBOOT_TAG).patch
 
 $(UBOOT): $(UBOOT_DIR)
 	mkdir -p $(@D)
 	make -C $< arch=ARM zynq_red_pitaya_defconfig
-	make -C $< arch=ARM CFLAGS=$(UBOOT_CFLAGS) all
+	make -C $< arch=ARM CFLAGS=$(UBOOT_CFLAGS) PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} all
 	cp $</u-boot $@
 
 $(UBOOT_SCRIPT): $(INSTALL_DIR) $(UBOOT_DIR) $(UBOOT_SCRIPT_BUILDROOT) $(UBOOT_SCRIPT_DEBIAN)
@@ -183,18 +160,22 @@ $(LINUX_TAR): | $(DL)
 $(LINUX_DIR): $(LINUX_TAR)
 	mkdir -p $@
 	tar -zxf $< --strip-components=1 --directory=$@
-	patch -d $@ -p 1 < patches/linux-xlnx-$(LINUX_TAG)-config.patch
-	patch -d $@ -p 1 < patches/linux-xlnx-$(LINUX_TAG)-eeprom.patch
-	patch -d $@ -p 1 < patches/linux-xlnx-$(LINUX_TAG)-lantiq.patch
-	patch -d $@ -p 1 < patches/linux-xlnx-$(LINUX_TAG)-wifi.patch
-	cp -r patches/rtl8192cu $@/drivers/net/wireless/
-	cp -r patches/lantiq/*  $@/drivers/net/phy/
+	patch -d $@ -p 1 < $(top_srcdir)/patches/linux-xlnx-$(LINUX_TAG)-config.patch
+	patch -d $@ -p 1 < $(top_srcdir)/patches/linux-xlnx-$(LINUX_TAG)-eeprom.patch
+	patch -d $@ -p 1 < $(top_srcdir)/patches/linux-xlnx-$(LINUX_TAG)-lantiq.patch
+	patch -d $@ -p 1 < $(top_srcdir)/patches/linux-xlnx-$(LINUX_TAG)-wifi.patch
+	cp -r $(top_srcdir)/patches/rtl8192cu $@/drivers/net/wireless/
+	cp -r $(top_srcdir)/patches/lantiq/*  $@/drivers/net/phy/
 
 $(LINUX): $(LINUX_DIR)
 	make -C $< mrproper
 	make -C $< ARCH=arm xilinx_zynq_defconfig
-	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) UIMAGE_LOADADDR=0x8000 uImage
-	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) modules
+	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	           PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+		   UIMAGE_LOADADDR=0x8000 uImage
+	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	           PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+		   modules
 	cp $</arch/arm/boot/uImage $@
 
 # manual triggering kernel commands
@@ -227,7 +208,7 @@ $(DTREE_DIR): $(DTREE_TAR)
 
 $(DEVICETREE): $(DTREE_DIR) $(LINUX) fpga
 	cp $(DTS) $(TMP)/devicetree.dts
-	patch $(TMP)/devicetree.dts patches/devicetree.patch
+#	patch $(TMP)/devicetree.dts $(srcdir)/patches/devicetree.patch
 	$(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb -o $(DEVICETREE) -i $(FPGA_DIR)/sdk/dts/ $(TMP)/devicetree.dts
 
 
@@ -270,6 +251,6 @@ clean:
 	make -C $(FPGA_DIR) clean
 	-make -C $(UBOOT_DIR) clean
 	$(RM) $(INSTALL_DIR) -rf
-	$(RM) $(TARGET) -rf
+	$(RM) $(TARGET) -rf	
 	$(RM) $(NAME)*.zip
 

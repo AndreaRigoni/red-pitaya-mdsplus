@@ -3413,7 +3413,6 @@ OS/debian/image.sh
 OS/debian/README.md
 OS/debian/redpitaya.sh
 OS/debian/update.sh
-OS/debian/wyliodrin.sh
 OS/tools/discovery.sh
 OS/tools/heartbeat.sh
 OS/README.md
@@ -3440,3 +3439,11 @@ OS/buildroot/config_2014.02.armhf
 OS/buildroot/busybox.config
 OS/buildroot/config_2016.02.armhf
 fpga/sdc/red_pitaya.xdc
+patches/u-boot-xlnx-xilinx-v2015.4.patch
+patches/u-boot-xlnx-xilinx-v2015.4.patch
+patches/u-boot.script.buildroot
+patches/devicetree.patch
+OS/debian/Makefile.am
+patches/fw_env.config
+fpga/ip/system.tcl
+Common.am

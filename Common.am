@@ -14,6 +14,52 @@ AM_LIBS     =  $(MDSPLUS_LIBS)
 
 AM_DEFAULT_SOURCE_EXT = .cpp
 
+MAKE_PROCESS=$(shell grep -c ^processor /proc/cpuinfo)
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# ///  OLD MAKEFILE FROM REDPITAYA  ////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+TMP          = $(top_builddir)/tmp
+DL           = $(top_builddir)/dl
+ECOSYSEM_ZIP = $(TMP)/ecosystem.zip
+
+UBOOT_TAG     = xilinx-v2015.4
+LINUX_TAG     = xilinx-v2015.4.01
+DTREE_TAG     = xilinx-v2015.4
+export BUILDROOT_TAG = 2016.02
+
+UBOOT_DIR     = $(TMP)/u-boot-xlnx-$(UBOOT_TAG)
+LINUX_DIR     = $(TMP)/linux-xlnx-$(LINUX_TAG)
+DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
+BUILDROOT_DIR = $(TMP)/buildroot-$(BUILDROOT_TAG)
+
+UBOOT_TAR     = $(DL)/u-boot-xlnx-$(UBOOT_TAG).tar.gz
+LINUX_TAR     = $(DL)/linux-xlnx-$(LINUX_TAG).tar.gz
+DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
+BUILDROOT_TAR = $(DL)/buildroot-$(BUILDROOT_TAG).tar.gz
+
+# it is possible to use an alternative download location (local) by setting environment variables
+UBOOT_URL     ?= https://github.com/Xilinx/u-boot-xlnx/archive/$(UBOOT_TAG).tar.gz
+LINUX_URL     ?= https://github.com/Xilinx/linux-xlnx/archive/$(LINUX_TAG).tar.gz
+DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
+BUILDROOT_URL ?= http://buildroot.uclibc.org/downloads/buildroot-$(BUILDROOT_TAG).tar.gz
+
+UBOOT_GIT     ?= https://github.com/Xilinx/u-boot-xlnx.git
+LINUX_GIT     ?= https://github.com/Xilinx/linux-xlnx.git
+DTREE_GIT     ?= https://github.com/Xilinx/device-tree-xlnx.git
+BUILDROOT_GIT ?= http://git.buildroot.net/git/buildroot.git
+
+SYSROOT=$(PWD)/OS/buildroot/buildroot-2014.02/output/host/usr/arm-buildroot-linux-gnueabihf/sysroot
+LINUX_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+UBOOT_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+
+TOOLCHAIN_PATH=/opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
+
+
+
+
 
 # //////////////////////////////////////////////////////////////////////////// #
 # ///  DOCKER   ////////////////////////////////////////////////////////////// #
@@ -39,3 +85,4 @@ reconfigure:
 
 
 
+ 

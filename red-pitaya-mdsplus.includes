@@ -3,3 +3,5 @@ OS/buildroot
 fpga
 patches
 fpga/sdc
+OS/debian
+fpga/ip
