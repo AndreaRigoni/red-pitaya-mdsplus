@@ -194,7 +194,7 @@ EOF_CHROOT
 chroot $ROOT_DIR <<- EOF_CHROOT
 echo root:root | chpasswd
 apt-get clean
+service sshd stop
 service ntp stop
-history -c
 EOF_CHROOT
 
