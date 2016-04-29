@@ -6,13 +6,15 @@
 # https://raw.githubusercontent.com/RedPitaya/RedPitaya/master/COPYING
 ################################################################################
 
+set -x
+
 # Makefile dependency
 srcdir=${srcdir:?}
 top_srcdir=${top_srcdir:?}
 
 
 # Copy files to the boot file system
-unzip ecosystem*.zip -d $BOOT_DIR
+unzip ${ECOSYSTEM_ZIP} -d $BOOT_DIR
 
 # Systemd services
 install -v -m 664 -o root -D $OVERLAY/etc/sysconfig/redpitaya                        $ROOT_DIR/etc/sysconfig/redpitaya

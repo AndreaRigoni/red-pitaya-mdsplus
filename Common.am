@@ -21,9 +21,9 @@ MAKE_PROCESS=$(shell grep -c ^processor /proc/cpuinfo)
 # ///  OLD MAKEFILE FROM REDPITAYA  ////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-TMP          = $(top_builddir)/tmp
-DL           = $(top_builddir)/dl
-ECOSYSEM_ZIP = $(TMP)/ecosystem.zip
+TMP           = $(abs_top_builddir)/tmp
+DL            = $(top_builddir)/dl
+ECOSYSTEM_ZIP = $(TMP)/ecosystem.zip
 
 UBOOT_TAG     = xilinx-v2015.4
 LINUX_TAG     = xilinx-v2015.4.01

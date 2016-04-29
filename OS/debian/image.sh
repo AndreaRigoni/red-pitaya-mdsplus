@@ -14,7 +14,8 @@ set -x
 ARCH=${ARCH:=armhf} # the ABI (armel/armhf)
 SIZE=${SIZE:=3500}  # default image size if 3GB, ok for all 4BG SD cards
 IMAGE=${IMAGE:=debian_${ARCH}_${DATE}.img}
-OVERLAY=${srcdir}/OS/debian/overlay
+OVERLAY=${OVERLAY:=overlay}
+ECOSYSTEM_ZIP=${ECOSYSTEM_ZIP:?}
 BOOT_DIR=boot
 ROOT_DIR=root   
 set +x
@@ -155,7 +156,8 @@ umount_image() {
   DEVICE=${DEVICE:=$(losetup -a | grep ${IMAGE} | awk '{print $1}' | sed 's/://')}
   if [ ${DEVICE} -a ${BOOT_DIR} -a ${ROOT_DIR} ]; then
     umount $BOOT_DIR $ROOT_DIR
-    rmdir --ignore-fail-on-non-empty $BOOT_DIR $ROOT_DIR
+    rmdir --ignore-fail-on-non-empty $BOOT_DIR 
+    rmdir --ignore-fail-on-non-empty $ROOT_DIR
     echo "unmounting device ${DEVICE}"
     losetup -d $DEVICE
   fi
