@@ -206,6 +206,7 @@ AC_CONFIG_FILES([
         Makefile
         src/Makefile
         fpga/Makefile
+        fpga/driver/Makefile
         OS/buildroot/Makefile
         OS/debian/Makefile
 	])

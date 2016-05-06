@@ -3447,3 +3447,14 @@ OS/debian/Makefile.am
 patches/fw_env.config
 fpga/ip/system.tcl
 Common.am
+OS/filesystem/etc/network/config
+OS/filesystem/etc/network/dnsmasq.conf
+OS/filesystem/etc/network/interfaces
+OS/filesystem/etc/network/interfaces.ap
+fpga/driver/axidmatest.c
+fpga/driver/Makefile
+fpga/driver/Makefile.am
+fpga/driver/Kbuild
+fpga/driver-nosg/zynq_dma.c
+fpga/driver-nosg/zynqflow.h
+fpga/driver-nosg/devicetree.dts

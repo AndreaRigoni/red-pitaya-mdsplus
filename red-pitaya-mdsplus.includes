@@ -5,3 +5,6 @@ patches
 fpga/sdc
 OS/debian
 fpga/ip
+OS/filesystem/etc/network
+fpga/driver
+fpga/driver-nosg

@@ -30,8 +30,8 @@ endif
 # //////////////////////////////////////////////////////////////////////////// #
 
 
-INSTALL_DIR=build
-TARGET=target
+INSTALL_DIR=`pwd`/build
+TARGET=`pwd`/target
 
 
 # directories
@@ -49,8 +49,6 @@ LINUX           = $(TMP)/uImage
 BOOT_UBOOT      = $(TMP)/boot.bin
 
 
-TOOLCHAIN_DIR   = /opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
-CROSS_COMPILE   = arm-linux-gnueabihf-
 
 ################################################################################
 # tarball
@@ -77,14 +75,27 @@ $(DL):
 $(TMP):
 	mkdir -p $@
 
+
+install-target-modules:
+	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   modules_install INSTALL_MOD_PATH=$(TARGET)
+
+install-target-modules:
+	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   modules_install INSTALL_MOD_PATH=$(TARGET)
+
+
 $(TARGET): $(BOOT_UBOOT) u-boot $(DEVICETREE) $(LINUX) buildroot
 	mkdir -p               $(TARGET)
 	cp $(BOOT_UBOOT)       $(TARGET)/boot.bin
 	cp $(DEVICETREE)       $(TARGET)
 	cp $(LINUX)            $(TARGET)
+	mkdir -p               $(TARGET)/lib/modules
 	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
 	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
-	   modules_install INSTALL_MOD_PATH=${TARGET}	
+	   modules_install INSTALL_MOD_PATH=$(TARGET)
 	mkdir -p               $(TARGET)/fpga
 	cp $(FPGA)             $(TARGET)/fpga/fpga.bit
 	cp -r $(INSTALL_DIR)/* $(TARGET)
@@ -178,12 +189,21 @@ $(LINUX): $(LINUX_DIR)
 		   modules
 	cp $</arch/arm/boot/uImage $@
 
+
 # manual triggering kernel commands
 linux-image: $(LINUX_DIR)
 	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) UIMAGE_LOADADDR=0x8000 uImage
 
 linux-modules: $(LINUX_DIR)
-	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) modules
+	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   modules
+
+test-driver: $(LINUX_DIR)
+	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   M=$(top_srcdir)/fpga/driver modules
+
 
 menuconfig: $(LINUX_DIR)
 	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) menuconfig

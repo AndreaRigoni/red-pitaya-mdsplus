@@ -55,8 +55,9 @@ SYSROOT=$(PWD)/OS/buildroot/buildroot-2014.02/output/host/usr/arm-buildroot-linu
 LINUX_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 UBOOT_CFLAGS = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 
-TOOLCHAIN_PATH=/opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
-
+TOOLCHAIN_PATH  = /opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
+TOOLCHAIN_DIR   = /opt/linaro/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
+CROSS_COMPILE   = arm-linux-gnueabihf-
 
 
 
