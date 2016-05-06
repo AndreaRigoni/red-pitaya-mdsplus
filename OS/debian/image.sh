@@ -142,7 +142,12 @@ mount_image() {
    check_command mkfs.vfat  
    mkfs.vfat -v    $BOOT_DEV
    mkfs.ext4 -F -j $ROOT_DEV
-
+   
+  else
+    DEVICE=`losetup -f`
+    losetup $DEVICE $IMAGE  
+    BOOT_DEV=/dev/`lsblk -lno NAME $DEVICE | sed '2!d'`
+    ROOT_DEV=/dev/`lsblk -lno NAME $DEVICE | sed '3!d'`    
   fi
 
   # Mount file systems

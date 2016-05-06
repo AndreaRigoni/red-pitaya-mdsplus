@@ -11,8 +11,21 @@ export IMAGE
 export OVERLAY
 export ECOSYSTEM_ZIP
 
+.PHONY: mount-image
+mount-image: image.sh $(IMAGE)
+	@echo "mount sd card image"
+	@. $< mount_image
+
+.PHONY: umount-image
+umount-image: image.sh $(IMAGE)
+	@echo "mount sd card image"
+	@. $< umount_image
+
+
 .PHONY: image
-image: $(srcdir)/image.sh
+image: $(IMAGE)
+
+$(IMAGE): image.sh
 	@echo "building sd card image"
 	-@. $< install_debian
 	-@. $< install_ecosystem
