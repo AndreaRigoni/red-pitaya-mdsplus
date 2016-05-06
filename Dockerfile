@@ -14,7 +14,7 @@ RUN apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386 libstdc++6:i3
 
 # todo .. add linaro
 RUN apt-get -y install \
-	make \
+	make automake autoconf libtool \
 	curl \
 	patch \
 	gcc g++ gcc-multilib \
