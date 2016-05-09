@@ -30,11 +30,11 @@ endif
 # //////////////////////////////////////////////////////////////////////////// #
 
 
-INSTALL_DIR=`pwd`/build
-TARGET=`pwd`/target
 
 
 # directories
+INSTALL_DIR=`pwd`/build
+TARGET=`pwd`/target
 FPGA_DIR        = fpga
 OS_TOOLS_DIR    = OS/tools
 ECOSYSTEM_DIR   = Applications/ecosystem
@@ -42,7 +42,7 @@ ECOSYSTEM_DIR   = Applications/ecosystem
 # targets
 FPGA            = $(FPGA_DIR)/out/red_pitaya.bit
 FSBL            = $(FPGA_DIR)/sdk/fsbl/executable.elf
-DTS             = $(FPGA_DIR)/sdk/dts/system.dts
+DTS             = $(FPGA_DIR)/sdk/dts/*.dts*
 DEVICETREE      = $(TMP)/devicetree.dtb
 UBOOT           = $(TMP)/u-boot.elf
 LINUX           = $(TMP)/uImage
@@ -76,26 +76,12 @@ $(TMP):
 	mkdir -p $@
 
 
-install-target-modules:
-	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
-	   modules_install INSTALL_MOD_PATH=$(TARGET)
 
-install-target-modules:
-	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
-	   modules_install INSTALL_MOD_PATH=$(TARGET)
-
-
-$(TARGET): $(BOOT_UBOOT) u-boot $(DEVICETREE) $(LINUX) buildroot
+$(TARGET): $(BOOT_UBOOT) u-boot $(DEVICETREE) linux buildroot
 	mkdir -p               $(TARGET)
 	cp $(BOOT_UBOOT)       $(TARGET)/boot.bin
 	cp $(DEVICETREE)       $(TARGET)
 	cp $(LINUX)            $(TARGET)
-	mkdir -p               $(TARGET)/lib/modules
-	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
-	   modules_install INSTALL_MOD_PATH=$(TARGET)
 	mkdir -p               $(TARGET)/fpga
 	cp $(FPGA)             $(TARGET)/fpga/fpga.bit
 	cp -r $(INSTALL_DIR)/* $(TARGET)
@@ -163,7 +149,7 @@ $(ENVTOOLS_CFG): $(UBOOT_DIR)
 ################################################################################
 
 .PHONY: linux
-linux: $(LINUX)
+linux: $(LINUX) modules_install
 
 $(LINUX_TAR): | $(DL)
 	curl -L $(LINUX_URL) -o $@
@@ -188,7 +174,13 @@ $(LINUX): $(LINUX_DIR)
 	           PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
 		   modules
 	cp $</arch/arm/boot/uImage $@
-
+	
+.PHONY: modules_install
+modules_install:
+	mkdir -p $(TMP)/lib/modules
+	make -C $(LINUX_DIR) ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	   PATH="${PATH}:${TOOLCHAIN_DIR}" CROSS_COMPILE=${CROSS_COMPILE} \
+	   modules_install INSTALL_MOD_PATH=$(TMP)
 
 # manual triggering kernel commands
 linux-image: $(LINUX_DIR)
@@ -227,8 +219,9 @@ $(DTREE_DIR): $(DTREE_TAR)
 	tar -zxf $< --strip-components=1 --directory=$@
 
 $(DEVICETREE): $(DTREE_DIR) $(LINUX) fpga
-	cp $(DTS) $(TMP)/devicetree.dts
+	cp $(DTS) $(TMP)
 #	patch $(TMP)/devicetree.dts $(srcdir)/patches/devicetree.patch
+	$(LINUX_DIR)/scripts/dtc/dtc -i $(FPGA_DIR)/sdk/dts/ $(TMP)/system.dts > $(TMP)/devicetree.dts
 	$(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb -o $(DEVICETREE) -i $(FPGA_DIR)/sdk/dts/ $(TMP)/devicetree.dts
 
 

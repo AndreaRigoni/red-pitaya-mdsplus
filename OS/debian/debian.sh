@@ -137,6 +137,13 @@ export LANG=C
 /debootstrap/debootstrap --second-stage
 EOF_CHROOT
 
+
+# install kernel modules
+mkdir -p $ROOT_DIR/lib
+cp -a ${MODULES_PATH}/lib/modules        $ROOT_DIR/lib
+chown root:root -R $ROOT_DIR/lib/modules
+
+
 # copy U-Boot environment tools
 install -v -m 664 -o root -D ${top_srcdir}/patches/fw_env.config        $ROOT_DIR/etc/fw_env.config
 install -v -m 664 -o root -D $OVERLAY/etc/apt/apt.conf.d/99norecommends $ROOT_DIR/etc/apt/apt.conf.d/99norecommends
@@ -145,6 +152,7 @@ install -v -m 664 -o root -D $OVERLAY/etc/fstab                         $ROOT_DI
 install -v -m 664 -o root -D $OVERLAY/etc/hostname                      $ROOT_DIR/etc/hostname
 install -v -m 664 -o root -D $OVERLAY/etc/timezone                      $ROOT_DIR/etc/timezone
 install -v -m 664 -o root -D $OVERLAY/etc/securetty                     $ROOT_DIR/etc/securetty
+
 
 # setup locale and timezone, install packages
 chroot $ROOT_DIR <<- EOF_CHROOT

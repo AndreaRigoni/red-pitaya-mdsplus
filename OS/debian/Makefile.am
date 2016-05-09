@@ -3,6 +3,7 @@ include $(top_srcdir)/Common.am
 
 OVERLAY = $(srcdir)/overlay
 IMAGE   = debian_armhf.img
+MODULES_PATH = $(TMP)
 
 export srcdir
 export top_srcdir
@@ -10,6 +11,7 @@ export top_srcdir
 export IMAGE
 export OVERLAY
 export ECOSYSTEM_ZIP
+export MODULES_PATH
 
 .PHONY: mount-image
 mount-image: image.sh $(IMAGE)
