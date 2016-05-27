@@ -8,3 +8,7 @@ fpga/ip
 OS/filesystem/etc/network
 fpga/driver
 fpga/driver-nosg
+../red-pitaya-mdsplus-build/tmp/linux-xlnx-xilinx-v2015.4.01/drivers/dma/xilinx
+../red-pitaya-mdsplus-build/tmp/linux-xlnx-xilinx-v2015.4.01/include
+../red-pitaya-mdsplus-build/fpga/sdk/dts
+fpga/sdk/dts

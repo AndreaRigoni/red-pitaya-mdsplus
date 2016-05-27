@@ -35,6 +35,11 @@ clean:
 	-rm -rf out .Xil .srcs sdk
 	
 project:
+	export system=system.tcl; \
+	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl
+
+project_rp:
+	export system=rp_original.tcl; \
 	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl
 
 clean_project:

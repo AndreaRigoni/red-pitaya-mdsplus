@@ -11,6 +11,7 @@
 
 global env
 set srcdir   $env(srcdir)
+set system   $env(system)
 set_param general.maxThreads $env(maxThreads)
 
 set path_rtl rtl
@@ -30,7 +31,7 @@ create_project -part $part -force redpitaya ./project
 ################################################################################
 
 # create PS BD
-source                            $srcdir/$path_ip/system.tcl
+source                            $srcdir/$path_ip/$system
 
 # generate SDK files
 generate_target all [get_files    system.bd]

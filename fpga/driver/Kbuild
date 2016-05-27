@@ -1,1 +1,4 @@
-obj-m += axidmatest.o
+obj-m += axidmatest.o dtbtrybind.o axidma_golden.o
+axidmatest-objs := axidmatest_core.o
+dtbtrybind-objs := dtbtrybind_core.o
+

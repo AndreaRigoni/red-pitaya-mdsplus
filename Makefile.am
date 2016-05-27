@@ -114,6 +114,7 @@ ENVTOOLS_CFG    = $(INSTALL_DIR)/etc/fw_env.config
 
 UBOOT_SCRIPT_BUILDROOT = $(srcdir)/patches/u-boot.script.buildroot
 UBOOT_SCRIPT_DEBIAN    = $(srcdir)/patches/u-boot.script.debian
+UBOOT_SCRIPT_KDBG    = $(srcdir)/patches/u-boot.script.kdbg
 UBOOT_SCRIPT           = $(INSTALL_DIR)/u-boot.scr
 
 .PHONY: u-boot
@@ -137,6 +138,7 @@ $(UBOOT): $(UBOOT_DIR)
 $(UBOOT_SCRIPT): $(INSTALL_DIR) $(UBOOT_DIR) $(UBOOT_SCRIPT_BUILDROOT) $(UBOOT_SCRIPT_DEBIAN)
 	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Buildroot" -d $(UBOOT_SCRIPT_BUILDROOT) $@.buildroot
 	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Debian"    -d $(UBOOT_SCRIPT_DEBIAN)    $@.debian
+	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Debian kdbg"  -d $(UBOOT_SCRIPT_KDBG)    $@.kdbg
 	cp $@.debian $@
 
 $(ENVTOOLS_CFG): $(UBOOT_DIR)
@@ -207,9 +209,8 @@ menuconfig: $(LINUX_DIR)
 # TODO: here separate device trees should be provided for Ubuntu and buildroot
 ################################################################################
 
-.PHONY:
-devicetree: $(DEVICETREE)
 
+devicetree: $(DEVICETREE)
 
 $(DTREE_TAR): | $(DL)
 	curl -L $(DTREE_URL) -o $@
@@ -243,14 +244,11 @@ URAMDISK_DIR    = OS/buildroot
 .PHONY: buildroot
 
 $(INSTALL_DIR):
-	mkdir $(INSTALL_DIR)
+	mkdir -p $(INSTALL_DIR)
 
 buildroot: $(INSTALL_DIR)
 	$(MAKE) -C $(URAMDISK_DIR)
 	$(MAKE) -C $(URAMDISK_DIR) install INSTALL_DIR=$(INSTALL_DIR)
-
-
-
 
 
 
